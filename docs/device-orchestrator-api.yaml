@@ -1,0 +1,167 @@
+openapi: 3.0.0
+info:
+  title: Device Orchestrator API
+  version: 1.0.0
+  description: API для управления устройствами, включая получение информации, обновление состояния и отправку команд.
+
+servers:
+  - url: http://www.prod.ru
+    description: Production server
+  - url: http://www.test.ru
+    description: Test server
+
+paths:
+  /api/devices/{deviceId}:
+    get:
+      summary: Получение информации об устройстве
+      description: Возвращает информацию об устройстве по его ID.
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор устройства.
+      responses:
+        '200':
+          description: Успешный ответ.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceInfo'
+        '404':
+          description: Устройство не найдено.
+        '500':
+          description: Ошибка сервера.
+
+  /api/devices/{deviceId}/state:
+    put:
+      summary: Обновление состояния устройства
+      description: Обновляет состояние устройства.
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор устройства.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceStateUpdate'
+      responses:
+        '200':
+          description: Состояние устройства обновлено.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Состояние устройства обновлено"
+        '400':
+          description: Неверный запрос.
+        '404':
+          description: Устройство не найдено.
+        '500':
+          description: Ошибка сервера.
+
+  /api/devices/{deviceId}/command:
+    post:
+      summary: Отправка команды устройству
+      description: Отправляет команду устройству.
+      parameters:
+        - name: deviceId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Идентификатор устройства.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceCommand'
+      responses:
+        '200':
+          description: Команда отправлена.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Команда отправлена"
+        '400':
+          description: Неверный запрос.
+        '404':
+          description: Устройство не найдено.
+        '500':
+          description: Ошибка сервера.
+
+components:
+  schemas:
+    DeviceInfo:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "123"
+        name:
+          type: string
+          example: "Датчик температуры"
+        type:
+          type: string
+          example: "temperature"
+        status:
+          type: string
+          example: "online"
+        location:
+          type: string
+          example: "Гостиная"
+        lastSeen:
+          type: string
+          format: date-time
+          example: "2023-10-01T12:34:56Z"
+      required:
+        - id
+        - name
+        - type
+        - status
+        - location
+        - lastSeen
+
+    DeviceStateUpdate:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "offline"
+        metadata:
+          type: object
+          properties:
+            temperature:
+              type: string
+              example: "22.5"
+      required:
+        - status
+
+    DeviceCommand:
+      type: object
+      properties:
+        command:
+          type: string
+          example: "turn_on"
+        parameters:
+          type: object
+          properties:
+            duration:
+              type: string
+              example: "10"
+      required:
+        - command

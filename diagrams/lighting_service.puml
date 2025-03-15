@@ -1,0 +1,22 @@
+@startuml
+!include <C4/C4_Component>
+
+title Диаграмма компонентов микросервиса "Lighting Service"
+
+Container(lighting, "Lighting Service", "Spring Boot", "Управление освещением")
+
+Component(api, "API", "Spring Web", "Обработка HTTP-запросов")
+Component(lighting_controller, "Lighting Controller", "Spring Boot", "Управление светом")
+Component(device_communicator, "Device Communicator", "Spring Integration", "Отправка команд устройствам")
+Component(kafka_producer, "Kafka Producer", "Spring Kafka", "Публикация событий в Kafka")
+Component(db_adapter, "Database Adapter", "Spring Data JPA", "Взаимодействие с PostgreSQL")
+Component(redis_adapter, "Redis Adapter", "Spring Data Redis", "Кэширование данных")
+
+' Взаимодействия
+Rel(api, lighting_controller, "Передаёт команды", "HTTP")
+Rel(lighting_controller, device_communicator, "Отправляет команды устройствам", "MQTT/HTTP/WebSocket")
+Rel(lighting_controller, kafka_producer, "Публикует события об освещении", "Kafka")
+Rel(lighting_controller, db_adapter, "Сохраняет/получает сценарии", "JDBC")
+Rel(lighting_controller, redis_adapter, "Кэширует данные", "Redis")
+
+@enduml

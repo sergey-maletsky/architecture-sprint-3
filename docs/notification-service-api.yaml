@@ -1,0 +1,76 @@
+asyncapi: '2.0.0'
+info:
+  title: Notification Service API
+  version: 1.0.0
+  description: API для управления уведомлениями, включая подписку на события Kafka и отправку уведомлений.
+servers:
+  kafka-server:
+    url: kafka://youhost.ru
+    protocol: kafka
+    description: Kafka broker для обработки событий.
+
+channels:
+  notifications:
+    description: Канал для получения событий уведомлений из Kafka.
+    subscribe:
+      operationId: handleNotificationEvent
+      message:
+        $ref: '#/components/messages/KafkaNotificationEvent'
+
+  /api/notifications:
+    publish:
+      operationId: sendNotification
+      message:
+        $ref: '#/components/messages/NotificationMessage'
+
+components:
+  messages:
+    KafkaNotificationEvent:
+      name: KafkaNotificationEvent
+      payload:
+        type: object
+        properties:
+          eventType:
+            type: string
+            description: Тип события.
+            example: "temperature_alert"
+          deviceId:
+            type: string
+            description: Идентификатор устройства.
+            example: "123"
+          value:
+            type: string
+            description: Значение, связанное с событием.
+            example: "30.5"
+          timestamp:
+            type: string
+            format: date-time
+            description: Время возникновения события.
+            example: "2023-10-01T12:34:56Z"
+        required:
+          - eventType
+          - deviceId
+          - value
+          - timestamp
+
+    NotificationMessage:
+      name: NotificationMessage
+      payload:
+        type: object
+        properties:
+          userId:
+            type: string
+            description: Идентификатор пользователя.
+            example: "456"
+          message:
+            type: string
+            description: Текст уведомления.
+            example: "Температура превысила 30°C"
+          type:
+            type: string
+            description: Тип уведомления (например, push).
+            example: "push"
+        required:
+          - userId
+          - message
+          - type

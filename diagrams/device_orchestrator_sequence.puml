@@ -1,0 +1,23 @@
+@startuml
+title Диаграмма последовательностей: Обработка команды устройства
+
+actor Пользователь
+participant "DeviceController" as Controller
+participant "DeviceCommandHandler" as CommandHandler
+participant "DeviceStateManager" as StateManager
+participant "DeviceCache" as Cache
+participant "DeviceRepository" as Repository
+participant "Устройство" as Device
+
+Пользователь -> Controller : sendCommand(DeviceCommand)
+Controller -> CommandHandler : handleCommand(command)
+CommandHandler -> StateManager : updateState(newState)
+StateManager -> Cache : put(deviceId, newState)
+StateManager -> Repository : save(device)
+StateManager -> Device : sendCommand(command)
+Device --> StateManager : Успешно выполнено
+StateManager --> CommandHandler : Успешно
+CommandHandler --> Controller : Успешно
+Controller --> Пользователь : Команда выполнена
+
+@enduml

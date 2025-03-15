@@ -1,0 +1,83 @@
+@startuml
+!include <C4/C4_Container>
+
+title Диаграмма контейнеров
+
+' Внешние пользователи и системы
+Person(пользователь, "Пользователь", "Владелец дома, управляющий устройствами через мобильное/веб-приложение")
+Person(специалист, "Специалист поддержки", "Помогает пользователям при подключении и настройке")
+Person(партнер, "Производители устройств", "Предоставляют совместимые устройства (датчики, камеры, реле)")
+
+System_Ext(устройства, "Умные устройства (датчики, реле, камеры)", "Обмениваются данными через MQTT/HTTP/WebSocket")
+
+' Контейнеры системы
+System_Boundary(tmpl, "Экосистема 'Тёплый дом'") {
+    Container(api_gateway, "API Gateway", "Spring Cloud Gateway", "Единая точка входа для всех запросов")
+    Container(auth, "Auth Service", "Spring Boot", "Управление пользователями, доступом")
+    Container(orch, "Device Orchestrator", "Spring Boot", "Оркестрация устройств")
+    Container(heating, "Heating Service", "Spring Boot", "Управление отоплением")
+    Container(lighting, "Lighting Service", "Spring Boot", "Управление светом")
+    Container(security, "Security Service", "Spring Boot", "Безопасность")
+    Container(gates, "Gate Control Service", "Spring Boot", "Управление воротами")
+    Container(cameras, "Camera Monitoring Service", "Spring Boot", "Управление камерами")
+    Container(notification, "Notification Service", "Spring Boot", "Отправка уведомлений")
+    Container(billing, "Billing Service", "Spring Boot", "Подписки и оплаты")
+    Container(redis, "Redis", "Кеш", "Кэш быстрых данных")
+    ContainerDb(pg, "PostgreSQL", "БД", "Основные данные")
+    Container(kafka, "Kafka", "Сообщения", "Шина событий")
+}
+
+' Взаимодействия пользователей через API Gateway
+Rel(пользователь, api_gateway, "Управляет устройствами и просматривает данные", "HTTPS (Web, Mobile)")
+Rel(специалист, api_gateway, "Работает с пользователями через админ-панель", "HTTPS")
+Rel(партнер, api_gateway, "Регистрирует свои устройства", "HTTPS (OAuth/Partner API)")
+
+' API Gateway взаимодействует с сервисами
+Rel(api_gateway, auth, "Авторизация, управление пользователями", "HTTPS")
+Rel(api_gateway, orch, "Регистрация и управление устройствами", "HTTPS")
+Rel(api_gateway, heating, "Управление отоплением", "HTTPS")
+Rel(api_gateway, lighting, "Управление освещением", "HTTPS")
+Rel(api_gateway, security, "Управление безопасностью", "HTTPS")
+Rel(api_gateway, gates, "Управление воротами", "HTTPS")
+Rel(api_gateway, cameras, "Управление камерами", "HTTPS")
+Rel(api_gateway, billing, "Управление подписками и оплатой", "HTTPS")
+
+' Сервисы взаимодействуют между собой через Kafka
+Rel(heating, kafka, "Публикует события о температуре", "Kafka (асинхронно)")
+Rel(lighting, kafka, "Публикует события об освещении", "Kafka (асинхронно)")
+Rel(security, kafka, "Публикует события тревоги", "Kafka (асинхронно)")
+Rel(gates, kafka, "Публикует события о воротах", "Kafka (асинхронно)")
+Rel(cameras, kafka, "Публикует события с камер", "Kafka (асинхронно)")
+Rel(orch, kafka, "Публикует события о подключении/отключении устройств", "Kafka (асинхронно)")
+
+' Подписчики Kafka
+Rel(kafka, notification, "Отправляет уведомления по событиям", "События (температура, тревоги, сценарии)")
+Rel(kafka, auth, "Реагирует на события, связанные с пользователями (например, блокировка)", "События (асинхронно)")
+
+' Взаимодействие с внешними устройствами
+Rel(heating, устройства, "Отправляет команды и получает данные", "MQTT/HTTP/WebSocket")
+Rel(lighting, устройства, "Отправляет команды и получает данные", "MQTT/HTTP/WebSocket")
+Rel(security, устройства, "Управляет охранными системами", "MQTT/HTTP/WebSocket")
+Rel(gates, устройства, "Управляет воротами", "MQTT/HTTP/WebSocket")
+Rel(cameras, устройства, "Управляет камерами", "MQTT/HTTP/WebSocket")
+
+' Базы данных
+Rel(auth, pg, "Управляет пользователями", "JDBC")
+Rel(orch, pg, "Хранит устройства и настройки", "JDBC")
+Rel(heating, pg, "Хранит сценарии отопления", "JDBC")
+Rel(lighting, pg, "Хранит сценарии освещения", "JDBC")
+Rel(security, pg, "Хранит сценарии безопасности", "JDBC")
+Rel(gates, pg, "Хранит сценарии управления воротами", "JDBC")
+Rel(cameras, pg, "Хранит сценарии управления камерами", "JDBC")
+Rel(billing, pg, "Хранит данные о подписках и оплатах", "JDBC")
+
+' Кеширование
+Rel(heating, redis, "Читает/пишет актуальную температуру и статусы устройств", "Redis (кеш)")
+Rel(lighting, redis, "Кеширует статусы освещения", "Redis (кеш)")
+Rel(security, redis, "Кеширует статусы охранных устройств", "Redis (кеш)")
+Rel(gates, redis, "Кеширует статусы ворот", "Redis (кеш)")
+Rel(cameras, redis, "Кеширует статусы камер", "Redis (кеш)")
+Rel(orch, redis, "Кеширует список устройств и их статусы", "Redis (кеш)")
+Rel(auth, redis, "Кеширует сессии, токены", "Redis (кеш)")
+
+@enduml

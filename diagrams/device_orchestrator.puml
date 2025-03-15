@@ -1,0 +1,22 @@
+@startuml
+!include <C4/C4_Component>
+
+title Диаграмма компонентов микросервиса "Device Orchestrator"
+
+Container(orch, "Device Orchestrator", "Spring Boot", "Оркестрация устройств")
+
+Component(api, "API", "Spring Web", "Обработка HTTP-запросов")
+Component(command_handler, "Command Handler", "Spring Boot", "Обработка команд для устройств")
+Component(device_state_manager, "Device State Manager", "Spring Boot", "Управление состоянием устройств")
+Component(kafka_consumer, "Kafka Consumer", "Spring Kafka", "Подписка на события Kafka")
+Component(db_adapter, "Database Adapter", "Spring Data JPA", "Взаимодействие с PostgreSQL")
+Component(redis_adapter, "Redis Adapter", "Spring Data Redis", "Кэширование данных")
+
+' Взаимодействия
+Rel(api, command_handler, "Передаёт команды", "HTTP")
+Rel(command_handler, device_state_manager, "Обновляет состояние устройств", "Методы")
+Rel(device_state_manager, db_adapter, "Сохраняет/получает данные", "JDBC")
+Rel(device_state_manager, redis_adapter, "Кэширует данные", "Redis")
+Rel(kafka_consumer, device_state_manager, "Обрабатывает события", "События Kafka")
+
+@enduml

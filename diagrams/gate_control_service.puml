@@ -1,0 +1,22 @@
+@startuml
+!include <C4/C4_Component>
+
+title Диаграмма компонентов микросервиса "Gate Control Service"
+
+Container(gates, "Gate Control Service", "Spring Boot", "Управление воротами")
+
+Component(api, "API", "Spring Web", "Обработка HTTP-запросов")
+Component(gate_controller, "Gate Controller", "Spring Boot", "Управление воротами")
+Component(device_communicator, "Device Communicator", "Spring Integration", "Отправка команд устройствам")
+Component(kafka_producer, "Kafka Producer", "Spring Kafka", "Публикация событий в Kafka")
+Component(db_adapter, "Database Adapter", "Spring Data JPA", "Взаимодействие с PostgreSQL")
+Component(redis_adapter, "Redis Adapter", "Spring Data Redis", "Кэширование данных")
+
+' Взаимодействия
+Rel(api, gate_controller, "Передаёт команды", "HTTP")
+Rel(gate_controller, device_communicator, "Отправляет команды устройствам", "MQTT/HTTP/WebSocket")
+Rel(gate_controller, kafka_producer, "Публикует события о состоянии ворот", "Kafka")
+Rel(gate_controller, db_adapter, "Сохраняет/получает сценарии", "JDBC")
+Rel(gate_controller, redis_adapter, "Кэширует данные", "Redis")
+
+@enduml

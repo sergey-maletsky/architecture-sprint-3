@@ -1,0 +1,56 @@
+@startuml
+title ER-диаграмма
+
+entity "Users" {
+  *id : integer
+  --
+  *name : varchar
+  *email : varchar
+  *password_hash : varchar
+  *created_at : timestamp
+}
+
+entity "Devices" {
+  *id : integer
+  --
+  *name : varchar
+  *type : varchar
+  *status : varchar
+  *location : varchar
+  *user_id : integer
+}
+
+entity "Subscriptions" {
+  *id : integer
+  --
+  *user_id : integer
+  *plan : varchar
+  *start_date : date
+  *end_date : date
+}
+
+entity "Events" {
+  *id : integer
+  --
+  *device_id : integer
+  *type : varchar
+  *value : varchar
+  *timestamp : timestamp
+}
+
+entity "Scenarios" {
+  *id : integer
+  --
+  *user_id : integer
+  *name : varchar
+  *description : text
+  *trigger : varchar
+  *action : varchar
+}
+
+' Связи
+Users ||--o{ Devices : "имеет"
+Users ||--o{ Subscriptions : "имеет"
+Devices ||--o{ Events : "генерирует"
+Users ||--o{ Scenarios : "создает"
+@enduml

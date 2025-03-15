@@ -1,0 +1,56 @@
+@startuml
+title Диаграмма классов для микросервиса "Device Orchestrator"
+
+class Device {
+    +String id
+    +String name
+    +String type
+    +String status
+    +String location
+    +Date lastSeen
+}
+
+class DeviceCommand {
+    +String deviceId
+    +String command
+    +Map<String, String> parameters
+}
+
+class DeviceState {
+    +String deviceId
+    +String status
+    +Map<String, String> metadata
+}
+
+class DeviceController {
+    +Device getDevice(String id)
+    +void sendCommand(DeviceCommand command)
+}
+
+class DeviceCommandHandler {
+    +void handleCommand(DeviceCommand command)
+}
+
+class DeviceStateManager {
+    +void updateState(DeviceState state)
+    +DeviceState getState(String deviceId)
+}
+
+class DeviceRepository {
+    +Device findById(String id)
+    +void save(Device device)
+}
+
+class DeviceCache {
+    +void put(String key, DeviceState value)
+    +DeviceState get(String key)
+    +void evict(String key)
+}
+
+' Взаимодействия
+DeviceController --> DeviceCommandHandler : Использует
+DeviceController --> DeviceStateManager : Использует
+DeviceCommandHandler --> DeviceStateManager : Обновляет состояние
+DeviceStateManager --> DeviceRepository : Сохраняет/получает данные
+DeviceStateManager --> DeviceCache : Кэширует данные
+@enduml
